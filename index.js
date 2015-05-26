@@ -47,7 +47,9 @@ function mapSourcePosition(position, sourceRoot) {
 		};
 		if (sourceMapData) {
 			sourceMapData = JSON.parse(sourceMapData);
-			if (sourceRoot) sourceMapData.sourceRoot = sourceRoot;
+			if (sourceRoot) {
+				sourceMapData.sourceRoot = sourceRoot;
+			}
 			sourceMap.map = new SourceMapConsumer(Object.assign(sourceMapData));
 		}
 		cache[position.source] = sourceMap;
@@ -79,7 +81,8 @@ function mapSourcePosition(position, sourceRoot) {
 module.exports = {
 	reporter: function(result, config) {
 		var errorCount = 0, warningCount = 0;
-		var output = result.map(function(el) {
+		var output = []; 
+		result.forEach(function(el) {
 			var pos = mapSourcePosition({
 				source: el.file,
 				line: el.error.line,
@@ -87,18 +90,20 @@ module.exports = {
 			}, config && config.sourceRoot ? config.sourceRoot : undefined);
 
 			var styler;
-			if (el.error.code === 'E') {
-				styler = chalk.red;
-				errorCount++;
-			} else if (el.error.code === 'W') {
-				styler.chalk.yellow;
-				warningCount++;
-			}
-
 			var clickableLink = pos.source + "(" + pos.line + "," + pos.column + ")";
-			return clickableLink + ": " + styler(el.error.reason);
+			switch(el.error.code[0]) {
+				case 'W':
+					styler = chalk.red;
+					errorCount++;
+					output.push(clickableLink + ": " + styler(el.error.reason));
+					break;
+				case 'E':
+					styler = chalk.yellow;
+					warningCount++;
+					output.push(clickableLink + ": " + styler(el.error.reason));
+					break;
+			}
 		});
-
 
 		if (errorCount === 0 && warningCount === 0) {
 			output.push(logSymbols.success + ' No problems');
@@ -108,7 +113,7 @@ module.exports = {
 			}
 
 			if (warningCount > 0) {
-				output.push('  ' + logSymbols.warning + '  ' + warningCount + pluralize(' warning', total));
+				output.push('  ' + logSymbols.warning + '  ' + warningCount + pluralize(' warning', warningCount));
 			}
 		}
 

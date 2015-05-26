@@ -1,6 +1,6 @@
 {
   "name": "jshint-sourcemap-reporter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A JSHint compatible sourcemap reporter that supports sourcemaps and allows click-to-source in WebStorm and IntelliJ.",
   "main": "index.js",
   "scripts": {
